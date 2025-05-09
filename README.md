@@ -4,7 +4,7 @@
 
 LearnHub is a responsive Learning Management System (LMS) prototype built using React and Supabase. It allows users to browse, search, and filter educational courses across various categories.
 
-Live demo: [LearnHub Demo](https://your-deployment-url.vercel.app)
+Live demo: [LearnHub Demo](https://course-flow-design.vercel.app/)
 ## Features
 
 - **Responsive Design**: Fully responsive layout that works across mobile, tablet, and desktop devices
