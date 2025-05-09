@@ -41,7 +41,7 @@ export default function CourseCard({
         </Badge>
       </div>
       <div className="p-5">
-        <h3 className="mb-2 text-xl font-semibold line-clamp-2">{title}</h3>
+        <h3 className="mb-2 text-xl font-semibold line-clamp-2" style={{height:"56px"}}>{title}</h3>
         <p className="mb-4 text-gray-600 line-clamp-3">{description}</p>
         
         <div className="flex items-center justify-between mb-4">
