@@ -1,89 +1,41 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase"; // make sure this file exists and is configured
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import SearchBar from "@/components/SearchBar";
 import CourseCard from "@/components/CourseCard";
 import { Button } from "@/components/ui/button";
 
-// Mock data for courses
-const coursesData = [
-  {
-    id: "1",
-    title: "Web Development Fundamentals",
-    description: "Learn the core concepts of web development including HTML, CSS and JavaScript to build modern websites.",
-    image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6",
-    category: "Programming",
-    instructor: "Alex Morgan",
-    lessons: 24,
-    duration: "8 weeks"
-  },
-  {
-    id: "2",
-    title: "UI/UX Design Principles",
-    description: "Master the fundamentals of user interface and experience design to create beautiful, functional applications.",
-    image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
-    category: "Design",
-    instructor: "Sarah Johnson",
-    lessons: 18,
-    duration: "6 weeks"
-  },
-  {
-    id: "3",
-    title: "Data Science Essentials",
-    description: "An introduction to data science using Python, pandas, and visualization tools to extract insights from data.",
-    image: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7",
-    category: "Data Science",
-    instructor: "Michael Chen",
-    lessons: 32,
-    duration: "10 weeks"
-  },
-  {
-    id: "4",
-    title: "Digital Marketing Mastery",
-    description: "Learn proven digital marketing strategies to grow your business and reach more customers online.",
-    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
-    category: "Marketing",
-    instructor: "Emily Rodriguez",
-    lessons: 20,
-    duration: "7 weeks"
-  },
-  {
-    id: "5",
-    title: "Mobile App Development with React Native",
-    description: "Build cross-platform mobile applications using React Native that work on both iOS and Android.",
-    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
-    category: "Programming",
-    instructor: "David Kim",
-    lessons: 28,
-    duration: "9 weeks"
-  },
-  {
-    id: "6",
-    title: "Business Analytics and Intelligence",
-    description: "Learn how to use data analytics to make better business decisions and gain competitive advantage.",
-    image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c",
-    category: "Business",
-    instructor: "Christine Taylor",
-    lessons: 22,
-    duration: "8 weeks"
-  }
-];
-
 export default function Index() {
-  const [filteredCourses, setFilteredCourses] = useState(coursesData);
+  const [courses, setCourses] = useState([]);
+  const [filteredCourses, setFilteredCourses] = useState([]);
+    useEffect(() => {
+    const fetchCourses = async () => {
+      const { data, error } = await supabase.from('courses').select('*');
+      if (error) {
+        console.error("Error fetching courses:", error);
+      } else {
+        setCourses(data);
+        setFilteredCourses(data); // Initialize with all courses
+      }
+    };
 
+    fetchCourses();
+  }, []);
   const handleSearch = (searchTerm: string, category: string) => {
-    // Filter courses based on search term and category
-    const filtered = coursesData.filter(course => {
-      const matchesSearchTerm = course.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                                course.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const filtered = courses.filter(course => {
+      const matchesSearchTerm =
+        course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        course.description.toLowerCase().includes(searchTerm.toLowerCase());
+
       const matchesCategory = category === "" || course.category === category;
-      
+
       return matchesSearchTerm && matchesCategory;
     });
-    
+
     setFilteredCourses(filtered);
   };
+
 
   return (
     <div className="min-h-screen bg-gray-50">
