@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import SearchBar from "@/components/SearchBar";
 import CourseCard from "@/components/CourseCard";
+import { Button } from "@/components/ui/button";
 
 // Mock data for courses
 const coursesData = [
