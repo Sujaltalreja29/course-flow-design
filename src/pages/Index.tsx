@@ -1,36 +1,58 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "../lib/supabase";
+import { 
+  fetchCourses, 
+  selectAllCourses, 
+  selectCourseStatus, 
+  selectLastFetched,
+  Course 
+} from "../store/coursesSlice";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import CourseCard from "../components/CourseCard";
+import LoadingIndicator from "../components/LoadingIndicator";
 import { Button } from "../components/ui/button";
 
 export default function Index() {
-  const [courses, setCourses] = useState([]);
+  // Redux
+const dispatch = useAppDispatch();
+const courses = useAppSelector(selectAllCourses);
+const status = useAppSelector(selectCourseStatus);
+const lastFetched = useAppSelector(selectLastFetched);
+
+  // Local state
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState("");
   const [categories, setCategories] = useState([]);
 
-  // Fetch courses and categories
+  // Fetch courses if not already fetched or if it's been more than 5 minutes
   useEffect(() => {
-    const fetchCourses = async () => {
-      const { data, error } = await supabase.from('courses').select('*');
-      if (error) {
-        console.error("Error fetching courses:", error);
-      } else {
-        setCourses(data);
-        setFilteredCourses(data);
-        
-        // Extract unique categories
-        const uniqueCategories = [...new Set(data.map(course => course.category))];
-        setCategories(uniqueCategories);
-      }
+    const shouldFetch = () => {
+      if (status === 'idle') return true;
+      if (!lastFetched) return true;
+      
+      // Refetch if last fetch was more than 5 minutes ago
+      const fiveMinutesAgo = new Date(new Date().getTime() - 5 * 60 * 1000);
+      return new Date(lastFetched) < fiveMinutesAgo;
     };
 
-    fetchCourses();
-  }, []);
+    if (shouldFetch()) {
+      dispatch(fetchCourses());
+    }
+  }, [dispatch, status, lastFetched]);
+
+  // Extract categories whenever courses changes
+  useEffect(() => {
+    if (courses.length > 0) {
+      const uniqueCategories = [...new Set(courses.map(course => course.category))];
+      setCategories(uniqueCategories);
+      
+      // Apply initial filtering
+      setFilteredCourses(courses);
+    }
+  }, [courses]);
 
   // Filter courses based on search term and category
   useEffect(() => {
@@ -96,7 +118,6 @@ export default function Index() {
             All
           </button>
           
-          {/* Dynamic category pills based on your image example */}
           {categories.map((category) => (
             <button
               key={category}
@@ -120,26 +141,45 @@ export default function Index() {
           <p className="text-gray-600">Expand your knowledge with our most popular courses</p>
         </div>
         
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-12">
-          {filteredCourses.length > 0 ? (
-            filteredCourses.map((course) => (
-              <CourseCard key={course.id} {...course} />
-            ))
-          ) : (
-            <div className="col-span-full py-8 text-center">
-              <p className="text-lg text-gray-600">No courses found matching your criteria.</p>
-              <Button 
-                onClick={() => {
-                  setSearchTerm("");
-                  setActiveCategory("");
-                }}
-                className="mt-4 bg-lms-primary hover:bg-lms-secondary"
-              >
-                Reset Filters
-              </Button>
-            </div>
-          )}
-        </div>
+        {/* Loading state */}
+        {status === 'loading' && <LoadingIndicator />}
+        
+        {/* Error state */}
+        {status === 'failed' && (
+          <div className="text-center p-8 bg-red-50 rounded-lg mb-8">
+            <p className="text-red-500">Failed to load courses. Please try again later.</p>
+            <Button 
+              onClick={() => dispatch(fetchCourses())}
+              className="mt-4 bg-red-500 hover:bg-red-600 text-white"
+            >
+              Retry
+            </Button>
+          </div>
+        )}
+        
+        {/* Courses grid */}
+        {status === 'succeeded' && (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-12">
+            {filteredCourses.length > 0 ? (
+              filteredCourses.map((course) => (
+                <CourseCard key={course.id} {...course} />
+              ))
+            ) : (
+              <div className="col-span-full py-8 text-center">
+                <p className="text-lg text-gray-600">No courses found matching your criteria.</p>
+                <Button 
+                  onClick={() => {
+                    setSearchTerm("");
+                    setActiveCategory("");
+                  }}
+                  className="mt-4 bg-lms-primary hover:bg-lms-secondary"
+                >
+                  Reset Filters
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       
       {/* Newsletter/Community Section */}

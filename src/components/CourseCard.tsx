@@ -5,14 +5,14 @@ import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface CourseCardProps {
-  id: string;
+  id: string | number;  // Allow either string or number for id
   title: string;
   description: string;
-  image: string;
+  image?: string;  // Make it optional to match your usage
   category: string;
   instructor: string;
-  lessons?: number;
-  duration?: string;
+  lessons?: number;  // Make optional if not always present
+  duration?: string;  // Make optional if not always present
 }
 
 export default function CourseCard({
